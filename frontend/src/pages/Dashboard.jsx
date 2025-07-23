@@ -50,29 +50,33 @@ const Dashboard = () => {
   const fetchEntries = async () => {
     try {
       const params = new URLSearchParams();
-
+      
+      // Add date filter if selected
       if (selectedDate) {
         params.append("date", selectedDate);
+        // Send timezone offset to backend (in minutes)
         const timezoneOffset = new Date().getTimezoneOffset();
         params.append("timezoneOffset", timezoneOffset.toString());
       }
-
+      
       const queryString = params.toString();
       const endpoint = queryString ? `/entries?${queryString}` : '/entries';
-
+      
+      
       const data = await apiCall(endpoint);
-
+      
+      // Filter entries by search term on the frontend
       let filteredEntries = data || [];
-
+      
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
-        filteredEntries = filteredEntries.filter(entry =>
+        filteredEntries = filteredEntries.filter(entry => 
           entry.title.toLowerCase().includes(searchLower) ||
           entry.content.toLowerCase().includes(searchLower) ||
           (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(searchLower)))
         );
       }
-
+      
       setEntries(filteredEntries);
     } catch (error) {
       console.error("❌ Fetch error:", error);
@@ -88,6 +92,7 @@ const Dashboard = () => {
       });
       setEntries([newEntry, ...entries]);
       setShowForm(false);
+      // Refresh entries to ensure proper filtering
       setTimeout(() => fetchEntries(), 100);
     } catch (error) {
       console.error('Error creating entry:', error);
@@ -100,11 +105,12 @@ const Dashboard = () => {
         method: 'PUT',
         body: JSON.stringify(entryData),
       });
-      setEntries(entries.map(entry =>
+      setEntries(entries.map(entry => 
         entry._id === editingEntry._id ? updatedEntry : entry
       ));
       setEditingEntry(null);
       setShowForm(false);
+      // Refresh entries to ensure proper filtering
       setTimeout(() => fetchEntries(), 100);
     } catch (error) {
       console.error('Error updating entry:', error);
@@ -137,6 +143,7 @@ const Dashboard = () => {
     setSelectedDate('');
   };
 
+  // Initial load
   useEffect(() => {
     const initDashboard = async () => {
       await Promise.all([fetchUser(), fetchEntries()]);
@@ -145,6 +152,7 @@ const Dashboard = () => {
     initDashboard();
   }, []);
 
+  // Handle search and date filter changes with debouncing
   useEffect(() => {
     const delayedSearch = setTimeout(() => {
       fetchEntries();
@@ -155,22 +163,22 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#ECFAE5] flex items-center justify-center">
-        <div className="text-[#2d5a27] text-xl animate-pulse">Loading your journal...</div>
+        <div className="text-[#2d5a27] text-xl">Loading your journal...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#ECFAE5]">
-      <header className="bg-[#CAE8BD] shadow-md border-b border-[#B0DB9C]">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <header className="bg-[#CAE8BD] shadow-sm border-b border-[#B0DB9C]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div className="flex items-center space-x-4">
-              <h1 className="text-3xl font-extrabold text-[#2d5a27] font-serif tracking-tight">My Journal</h1>
+              <h1 className="text-2xl font-bold text-[#2d5a27]">My Journal</h1>
               {user && (
-                <div className="flex items-center space-x-2 bg-[#B0DB9C] px-3 py-1 rounded-full shadow">
-                  <User size={18} className="text-[#2d5a27]" />
-                  <span className="text-sm font-medium text-[#2d5a27]">{user.username}</span>
+                <div className="flex items-center space-x-2 text-[#2d5a27]">
+                  <User size={20} />
+                  <span className="text-sm font-medium">{user.username}</span>
                 </div>
               )}
             </div>
@@ -189,7 +197,7 @@ const Dashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-[#DDF6D2] rounded-xl p-6 mb-8 shadow-md">
+        <div className="bg-[#DDF6D2] rounded-lg p-6 mb-8 shadow-sm">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="relative flex-1">
@@ -214,7 +222,7 @@ const Dashboard = () => {
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center space-x-2 px-6 py-2 bg-[#2d5a27] text-white rounded-lg hover:bg-[#244d20] transition-colors font-semibold shadow"
+              className="flex items-center space-x-2 px-6 py-2 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors font-medium"
             >
               <Plus size={20} />
               <span>New Entry</span>
@@ -262,8 +270,8 @@ const Dashboard = () => {
         ) : (
           <div className="text-center py-12">
             <div className="text-[#2d5a27] text-lg mb-4">
-              {searchTerm || selectedDate ?
-                'No entries found matching your criteria' :
+              {searchTerm || selectedDate ? 
+                'No entries found matching your criteria' : 
                 'No journal entries yet'
               }
             </div>
@@ -277,7 +285,7 @@ const Dashboard = () => {
             ) : null}
             <button
               onClick={() => setShowForm(true)}
-              className="px-6 py-3 bg-[#2d5a27] text-white rounded-lg hover:bg-[#244d20] transition-colors font-semibold"
+              className="px-6 py-3 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors font-medium"
             >
               Create your first entry
             </button>
