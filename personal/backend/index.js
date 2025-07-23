@@ -1,4 +1,3 @@
-// ✅ Required Packages
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -6,20 +5,16 @@ const bcrypt = require("bcryptjs");
 const cors = require("cors");
 require("dotenv").config();
 
-// ✅ App Setup
 const app = express();
 app.use(express.json());
 
-// ✅ Allowed Origins
 const allowedOrigins = [
-  "http://localhost:5173", // Local dev
-  "https://your-frontend.onrender.com", // ✅ Replace with your actual frontend Render URL
+  "http://localhost:5173",
+  "https://your-frontend.onrender.com",
 ];
 
-// ✅ CORS Options
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman) or from allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -31,16 +26,14 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ✅ MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("✅ MongoDB connected"))
+  .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB Error:", err));
 
-// ✅ Schemas
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -59,7 +52,6 @@ const entrySchema = new mongoose.Schema(
 );
 const Entry = mongoose.model("Entry", entrySchema);
 
-// ✅ JWT Middleware
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Unauthorized" });
@@ -73,19 +65,15 @@ const auth = (req, res, next) => {
   }
 };
 
-// ✅ Routes
-
-// ▶️ Signup
+// Signup
 app.post("/api/signup", async (req, res) => {
-  const { email, password, username } = req.body; // ✅ get username too
+  const { email, password, username } = req.body;
 
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: "User already exists" });
 
     const hash = await bcrypt.hash(password, 10);
-
-    // ✅ save username along with email and password
     const user = await User.create({ email, password: hash, username });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -95,7 +83,7 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
-// ▶️ Login
+// Login
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -112,7 +100,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// ▶️ Get Current User Info
+// Get Current User Info
 app.get("/api/me", auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("email username");
@@ -123,7 +111,7 @@ app.get("/api/me", auth, async (req, res) => {
   }
 });
 
-// ▶️ Create Entry
+// Create Entry
 app.post("/api/entries", auth, async (req, res) => {
   const { title, content, tags } = req.body;
   try {
@@ -139,36 +127,23 @@ app.post("/api/entries", auth, async (req, res) => {
   }
 });
 
-// ▶️ Get all entries with CORRECT timezone handling
+// Get Entries (with optional date filter)
 app.get("/api/entries", auth, async (req, res) => {
   try {
     let query = { userId: req.userId };
 
     if (req.query.date) {
-      const dateStr = req.query.date; // e.g. "2025-07-22"
-      const clientTimezoneOffset = parseInt(req.query.timezoneOffset) || 0; // minutes
-      
+      const dateStr = req.query.date;
+      const clientTimezoneOffset = parseInt(req.query.timezoneOffset) || 0;
       if (isNaN(Date.parse(dateStr))) {
         return res.status(400).json({ error: "Invalid date format" });
       }
 
-      console.log(`🔍 Filtering for date: ${dateStr}`);
-      console.log(`🌍 Client timezone offset: ${clientTimezoneOffset} minutes`);
-
-      // Create start and end of day for the selected date in UTC
       const startOfDayUTC = new Date(dateStr + 'T00:00:00.000Z');
       const endOfDayUTC = new Date(dateStr + 'T23:59:59.999Z');
-      
-      // Adjust for client timezone
-      // clientTimezoneOffset is positive for west of UTC, negative for east
-      // For India (UTC+5:30), this will be -330
       const offsetMs = clientTimezoneOffset * 60 * 1000;
-      
       const adjustedStart = new Date(startOfDayUTC.getTime() + offsetMs);
       const adjustedEnd = new Date(endOfDayUTC.getTime() + offsetMs);
-
-      console.log(`📅 Original UTC range: ${startOfDayUTC.toISOString()} to ${endOfDayUTC.toISOString()}`);
-      console.log(`📅 Adjusted UTC range: ${adjustedStart.toISOString()} to ${adjustedEnd.toISOString()}`);
 
       query.createdAt = {
         $gte: adjustedStart,
@@ -177,25 +152,13 @@ app.get("/api/entries", auth, async (req, res) => {
     }
 
     const entries = await Entry.find(query).sort({ createdAt: -1 });
-    
-    // Debug log
-    if (req.query.date) {
-      console.log(`📊 Found ${entries.length} entries for date ${req.query.date}`);
-      entries.forEach(entry => {
-        const clientOffset = parseInt(req.query.timezoneOffset) || 0;
-        const localTime = new Date(entry.createdAt.getTime() - (clientOffset * 60 * 1000));
-        console.log(`  📝 "${entry.title}" - UTC: ${entry.createdAt.toISOString()}, ClientLocal: ${localTime.toISOString()}`);
-      });
-    }
-    
     res.json(entries);
   } catch (err) {
-    console.error("Error fetching entries:", err);
     res.status(500).json({ error: "Something went wrong on the server." });
   }
 });
 
-// ▶️ Update Entry
+// Update Entry
 app.put("/api/entries/:id", auth, async (req, res) => {
   const { title, content, tags } = req.body;
   try {
@@ -211,7 +174,7 @@ app.put("/api/entries/:id", auth, async (req, res) => {
   }
 });
 
-// ▶️ Delete Entry
+// Delete Entry
 app.delete("/api/entries/:id", auth, async (req, res) => {
   try {
     const deleted = await Entry.findOneAndDelete({ _id: req.params.id, userId: req.userId });
@@ -222,6 +185,5 @@ app.delete("/api/entries/:id", auth, async (req, res) => {
   }
 });
 
-// ✅ Server Listen
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
