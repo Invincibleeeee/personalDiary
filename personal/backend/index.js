@@ -145,40 +145,35 @@ app.post("/api/entries", auth, async (req, res) => {
   }
 });
 
-// ▶️ Get All Entries
-app.get("/api/entries", auth, async (req, res) => {
-  const { search, date } = req.query;
-  const query = { userId: req.userId };
 
-  if (search) {
-    const regex = new RegExp(search, "i");
-    query.$or = [
-      { title: { $regex: regex } },
-      { content: { $regex: regex } },
-      { tags: { $elemMatch: { $regex: regex } } }// ✅ allow searching inside tags
-    ];
+//get all entries
+
+let query = { user: req.userId }; // base query (filter by user)
+
+if (req.query.date) {
+  const selectedDate = new Date(req.query.date);
+
+  if (!isNaN(selectedDate)) {
+    const istOffset = 5.5 * 60 * 60 * 1000;
+
+    const start = new Date(selectedDate.getTime() + istOffset);
+    start.setUTCHours(0, 0, 0, 0);
+
+    const end = new Date(selectedDate.getTime() + istOffset);
+    end.setUTCHours(23, 59, 59, 999);
+
+    query.createdAt = {
+      $gte: new Date(start.getTime() - istOffset),
+      $lte: new Date(end.getTime() - istOffset),
+    };
+  } else {
+    return res.status(400).json({ error: "Invalid date format" });
   }
-
- if (date) {
-  const selectedDate = new Date(date);
-
-  const start = new Date(selectedDate);
-  start.setHours(0, 0, 0, 0); // IST/local time
-
-  const end = new Date(selectedDate);
-  end.setHours(23, 59, 59, 999); // IST/local time
-
-  query.createdAt = { $gte: start, $lte: end };
 }
 
+const entries = await Entry.find(query).sort({ createdAt: -1 });
+res.json(entries);
 
-  try {
-    const entries = await Entry.find(query).sort({ createdAt: -1 });
-    res.json(entries);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch entries", error: err });
-  }
-});
 
 // ▶️ Update Entry
 app.put("/api/entries/:id", auth, async (req, res) => {
