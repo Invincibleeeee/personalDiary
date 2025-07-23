@@ -166,16 +166,19 @@ app.get("/api/entries", auth, async (req, res) => {
   const query = { userId: req.userId };
 
   if (search) {
+    const regex = new RegExp(search, "i");
     query.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { content: { $regex: search, $options: "i" } },
+      { title: { $regex: regex } },
+      { content: { $regex: regex } },
+      { tags: { $in: [regex] } } // ✅ allow searching inside tags
     ];
   }
 
   if (date) {
     const start = new Date(date);
+    start.setHours(0, 0, 0, 0); // ✅ beginning of the day
     const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
+    end.setHours(23, 59, 59, 999); // ✅ end of the day
     query.createdAt = { $gte: start, $lte: end };
   }
 
