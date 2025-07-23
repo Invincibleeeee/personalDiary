@@ -139,40 +139,52 @@ app.post("/api/entries", auth, async (req, res) => {
   }
 });
 
-// ▶️ Get all entries with SIMPLE and CORRECT timezone handling
+// ▶️ Get all entries with CORRECT timezone handling
 app.get("/api/entries", auth, async (req, res) => {
   try {
     let query = { userId: req.userId };
 
     if (req.query.date) {
       const dateStr = req.query.date; // e.g. "2025-07-22"
+      const clientTimezoneOffset = parseInt(req.query.timezoneOffset) || 0; // minutes
       
       if (isNaN(Date.parse(dateStr))) {
         return res.status(400).json({ error: "Invalid date format" });
       }
 
-      // Simple approach: Create UTC date range for the selected date
-      // This treats the selected date as if it's in UTC
-      const startOfDay = new Date(dateStr + 'T00:00:00.000Z');
-      const endOfDay = new Date(dateStr + 'T23:59:59.999Z');
-
       console.log(`🔍 Filtering for date: ${dateStr}`);
-      console.log(`📅 UTC start: ${startOfDay.toISOString()}`);
-      console.log(`📅 UTC end: ${endOfDay.toISOString()}`);
+      console.log(`🌍 Client timezone offset: ${clientTimezoneOffset} minutes`);
+
+      // Create start and end of day for the selected date in UTC
+      const startOfDayUTC = new Date(dateStr + 'T00:00:00.000Z');
+      const endOfDayUTC = new Date(dateStr + 'T23:59:59.999Z');
+      
+      // Adjust for client timezone
+      // clientTimezoneOffset is positive for west of UTC, negative for east
+      // For India (UTC+5:30), this will be -330
+      const offsetMs = clientTimezoneOffset * 60 * 1000;
+      
+      const adjustedStart = new Date(startOfDayUTC.getTime() + offsetMs);
+      const adjustedEnd = new Date(endOfDayUTC.getTime() + offsetMs);
+
+      console.log(`📅 Original UTC range: ${startOfDayUTC.toISOString()} to ${endOfDayUTC.toISOString()}`);
+      console.log(`📅 Adjusted UTC range: ${adjustedStart.toISOString()} to ${adjustedEnd.toISOString()}`);
 
       query.createdAt = {
-        $gte: startOfDay,
-        $lte: endOfDay,
+        $gte: adjustedStart,
+        $lte: adjustedEnd,
       };
     }
 
     const entries = await Entry.find(query).sort({ createdAt: -1 });
     
-    // Debug log to see what we're returning
+    // Debug log
     if (req.query.date) {
       console.log(`📊 Found ${entries.length} entries for date ${req.query.date}`);
       entries.forEach(entry => {
-        console.log(`  📝 Entry "${entry.title}" created at UTC: ${entry.createdAt.toISOString()}`);
+        const clientOffset = parseInt(req.query.timezoneOffset) || 0;
+        const localTime = new Date(entry.createdAt.getTime() - (clientOffset * 60 * 1000));
+        console.log(`  📝 "${entry.title}" - UTC: ${entry.createdAt.toISOString()}, ClientLocal: ${localTime.toISOString()}`);
       });
     }
     
