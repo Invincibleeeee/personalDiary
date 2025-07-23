@@ -202,7 +202,7 @@ const DiaryLandingPage = () => {
         © 2025 Diary. Crafted with{" "}
         <Heart className="inline w-4 h-4 text-red-400 animate-pulse" /> by{" "}
         <a
-          href="https://github.com/yourusername"
+          href="https://github.com/Invincibleeeee"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#2d5a27] font-medium hover:underline"
