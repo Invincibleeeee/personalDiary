@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 const allowedOrigins = [
-  "https://personal-diary-sigma.vercel.app/",
+  "https://personal-diary-sigma.vercel.app",
 ];
 
 const corsOptions = {
