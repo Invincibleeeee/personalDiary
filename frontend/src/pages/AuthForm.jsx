@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, User, Mail, Lock, Feather, Eye, EyeOff } from "lucide-react";
+import iconn from "../assets/iconn.png";
 
 export default function AuthForm() {
   const location = useLocation();
@@ -64,47 +65,46 @@ const handleSubmit = async (e) => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#ECFAE5' }}>
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden border-4" 
-           style={{ borderColor: '#DDF6D2' }}>
+            style={{ borderColor: '#DDF6D2' }}>
         <div className="flex flex-col lg:flex-row min-h-[600px]">
           
           {/* Left Panel */}
-          <div className="lg:w-1/2 p-12 flex flex-col justify-center items-center text-center relative overflow-hidden"
-               style={{ backgroundColor: '#CAE8BD' }}>
-            <div className="absolute top-10 left-10 w-20 h-20 rounded-full opacity-20"
-                 style={{ backgroundColor: '#B0DB9C' }}></div>
-            <div className="absolute bottom-16 right-12 w-32 h-32 rounded-full opacity-15"
-                 style={{ backgroundColor: '#DDF6D2' }}></div>
+<div className="lg:w-1/2 p-12 flex flex-col justify-center items-center text-center relative overflow-hidden"
+      style={{ backgroundColor: '#CAE8BD' }}>
 
-            <div className="relative z-10">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
-                   style={{ backgroundColor: '#B0DB9C' }}>
-                <Feather className="w-10 h-10 text-white" />
-              </div>
+  <div className="relative z-10">
+    {/* Updated Logo */}
+    <img
+      src={iconn} // Make sure the path is correct
+      alt="Diary Logo"
+      className="w-20 h-20 rounded-full mx-auto mb-6 shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
+    />
 
-              <h1 className="text-4xl font-bold mb-4 text-gray-800 transition-all duration-300">
-                {isLogin ? "Welcome Back!" : "Join Our Community"}
-              </h1>
+    <h1 className="text-4xl font-bold mb-4 text-gray-800 transition-all duration-300">
+      {isLogin ? "Welcome Back!" : "Join Our Community"}
+    </h1>
 
-              <p className="text-gray-700 text-lg mb-8 leading-relaxed max-w-sm transition-all duration-300">
-                {isLogin 
-                  ? "Continue your journaling journey and capture today's thoughts" 
-                  : "Start your personal diary and preserve your memories forever"
-                }
-              </p>
+    <p className="text-gray-700 text-lg mb-8 leading-relaxed max-w-sm transition-all duration-300">
+      {isLogin 
+        ? "Continue your journaling journey and capture today's thoughts" 
+        : "Start your personal diary and preserve your memories forever"
+      }
+    </p>
 
-              <div className="flex items-center justify-center space-x-2 mb-8">
-                <BookOpen className="w-5 h-5 text-gray-600" />
-                <span className="text-gray-600 font-medium">Your Digital Sanctuary</span>
-              </div>
+    <div className="flex items-center justify-center space-x-2 mb-8">
+      <BookOpen className="w-5 h-5 text-gray-600" />
+      <span className="text-gray-600 font-medium">Your Digital Sanctuary</span>
+    </div>
 
-              <button
-                onClick={handleToggleMode}
-                className="px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 border-2 border-white text-white hover:bg-white hover:text-gray-700"
-              >
-                {isLogin ? "New here? Sign up" : "Already have an account?"}
-              </button>
-            </div>
-          </div>
+    <button
+      onClick={handleToggleMode}
+      className="px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 border-2 border-white text-white hover:bg-white hover:text-gray-700"
+    >
+      {isLogin ? "New here? Sign up" : "Already have an account?"}
+    </button>
+  </div>
+</div>
+
 
           {/* Right Panel - Form */}
           <div className="lg:w-1/2 p-12 flex items-center justify-center" style={{ backgroundColor: '#ECFAE5' }}>
@@ -125,7 +125,7 @@ const handleSubmit = async (e) => {
 
                 {/* Name (only in register) */}
                 {!isLogin && (
-                  <div className="relative pb-6">
+                  <div className="relative w-full">
                     <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                       <User className="w-5 h-5 text-gray-500" />
                     </div>
