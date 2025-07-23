@@ -148,7 +148,7 @@ app.post("/api/entries", auth, async (req, res) => {
 
 
 // ▶️ Get all entries
-app.get("/api/entries", authMiddleware, async (req, res) => {
+app.get("/api/entries", auth, async (req, res) => {
   try {
     let query = { user: req.userId };
 
