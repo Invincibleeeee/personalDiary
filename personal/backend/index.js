@@ -10,13 +10,27 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
-// ✅ Temporary CORS during first deploy
-app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  })
-);
+// ✅ Allowed Origins
+const allowedOrigins = [
+  "http://localhost:5173", // Local dev
+  "https://your-frontend.onrender.com", // ✅ Replace with your actual frontend Render URL
+];
+
+// ✅ CORS Options
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman) or from allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 
 
 
