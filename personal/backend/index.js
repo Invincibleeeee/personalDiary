@@ -9,8 +9,7 @@ const app = express();
 app.use(express.json());
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://your-frontend.onrender.com",
+  "https://personal-diary-sigma.vercel.app/",
 ];
 
 const corsOptions = {
