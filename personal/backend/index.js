@@ -146,33 +146,40 @@ app.post("/api/entries", auth, async (req, res) => {
 });
 
 
-//get all entries
 
-let query = { user: req.userId }; // base query (filter by user)
+// ▶️ Get all entries
+app.get("/api/entries", authMiddleware, async (req, res) => {
+  try {
+    let query = { user: req.userId };
 
-if (req.query.date) {
-  const selectedDate = new Date(req.query.date);
+    if (req.query.date) {
+      const selectedDate = new Date(req.query.date);
 
-  if (!isNaN(selectedDate)) {
-    const istOffset = 5.5 * 60 * 60 * 1000;
+      if (!isNaN(selectedDate)) {
+        const istOffset = 5.5 * 60 * 60 * 1000;
 
-    const start = new Date(selectedDate.getTime() + istOffset);
-    start.setUTCHours(0, 0, 0, 0);
+        const start = new Date(selectedDate.getTime() + istOffset);
+        start.setUTCHours(0, 0, 0, 0);
 
-    const end = new Date(selectedDate.getTime() + istOffset);
-    end.setUTCHours(23, 59, 59, 999);
+        const end = new Date(selectedDate.getTime() + istOffset);
+        end.setUTCHours(23, 59, 59, 999);
 
-    query.createdAt = {
-      $gte: new Date(start.getTime() - istOffset),
-      $lte: new Date(end.getTime() - istOffset),
-    };
-  } else {
-    return res.status(400).json({ error: "Invalid date format" });
+        query.createdAt = {
+          $gte: new Date(start.getTime() - istOffset),
+          $lte: new Date(end.getTime() - istOffset),
+        };
+      } else {
+        return res.status(400).json({ error: "Invalid date format" });
+      }
+    }
+
+    const entries = await Entry.find(query).sort({ createdAt: -1 });
+    res.json(entries);
+  } catch (err) {
+    console.error("Error fetching entries:", err);
+    res.status(500).json({ error: "Something went wrong on the server." });
   }
-}
-
-const entries = await Entry.find(query).sort({ createdAt: -1 });
-res.json(entries);
+});
 
 
 // ▶️ Update Entry
