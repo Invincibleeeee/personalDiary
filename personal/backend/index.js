@@ -148,27 +148,22 @@ app.post("/api/entries", auth, async (req, res) => {
 
 
 // ▶️ Get all entries
-// ▶️ Get all entries
 app.get("/api/entries", auth, async (req, res) => {
   try {
     let query = { user: req.userId };
 
     if (req.query.date) {
-      // Ensure the date is in YYYY-MM-DD format
-      const rawDate = req.query.date;
-      const parsedDate = new Date(`${rawDate}T00:00:00.000Z`); // ✅ Ensure UTC parse
+      const dateStr = req.query.date; // format: YYYY-MM-DD
+      const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
+      const endOfDay = new Date(`${dateStr}T23:59:59.999Z`);
 
-      if (isNaN(parsedDate.getTime())) {
+      if (isNaN(startOfDay.getTime())) {
         return res.status(400).json({ error: "Invalid date format" });
       }
 
-      // Calculate range: [00:00:00 to 23:59:59 of that day]
-      const nextDay = new Date(parsedDate);
-      nextDay.setDate(parsedDate.getDate() + 1);
-
       query.createdAt = {
-        $gte: parsedDate,
-        $lt: nextDay,
+        $gte: startOfDay,
+        $lte: endOfDay,
       };
     }
 
@@ -179,6 +174,7 @@ app.get("/api/entries", auth, async (req, res) => {
     res.status(500).json({ error: "Something went wrong on the server." });
   }
 });
+
 
 
 // ▶️ Update Entry
