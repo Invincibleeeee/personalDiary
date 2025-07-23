@@ -32,21 +32,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS Not Allowed"));
-      }
-    },
-    credentials: true,
-  })
-);
-
 // ✅ MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -170,17 +155,21 @@ app.get("/api/entries", auth, async (req, res) => {
     query.$or = [
       { title: { $regex: regex } },
       { content: { $regex: regex } },
-      { tags: { $in: [regex] } } // ✅ allow searching inside tags
+      { tags: { $elemMatch: { $regex: regex } } }// ✅ allow searching inside tags
     ];
   }
 
-  if (date) {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0); // ✅ beginning of the day
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999); // ✅ end of the day
-    query.createdAt = { $gte: start, $lte: end };
-  }
+ if (date) {
+  const selectedDate = new Date(date);
+
+  const start = new Date(selectedDate);
+  start.setUTCHours(0, 0, 0, 0); // 🔁 UTC start of day
+
+  const end = new Date(selectedDate);
+  end.setUTCHours(23, 59, 59, 999); // 🔁 UTC end of day
+
+  query.createdAt = { $gte: start, $lte: end };
+}
 
   try {
     const entries = await Entry.find(query).sort({ createdAt: -1 });
