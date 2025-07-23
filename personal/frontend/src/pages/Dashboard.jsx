@@ -2,12 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, LogOut, User, Calendar } from 'lucide-react';
 import EntryCard from '../components/EntryCard';
 import EntryForm from '../components/EntryForm';
-
+import LogoutButton from '../components/LogoutButton';
 import { Link } from "react-router-dom";
-
-
-
-
 
 const Dashboard = () => {
   const [entries, setEntries] = useState([]);
@@ -17,15 +13,11 @@ const Dashboard = () => {
   const [editingEntry, setEditingEntry] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [showCalendar, setShowCalendar] = useState(false);
 
+  const API_BASE = 'https://personaldiary-emt4.onrender.com/api';
 
-  const API_BASE = 'http://localhost:5000/api';
-
-  // Get token from localStorage
   const getToken = () => localStorage.getItem('token');
 
-  // API call helper
   const apiCall = async (endpoint, options = {}) => {
     const token = getToken();
     const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -36,17 +28,16 @@ const Dashboard = () => {
       },
       ...options,
     });
-    
+
     if (response.status === 401) {
       localStorage.removeItem('token');
       window.location.reload();
       return;
     }
-    
+
     return response.json();
   };
 
-  // Fetch user info
   const fetchUser = async () => {
     try {
       const userData = await apiCall('/me');
@@ -56,25 +47,43 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch entries with search/filter
   const fetchEntries = async () => {
     try {
-      let url = '/entries';
       const params = new URLSearchParams();
       
-      if (searchTerm) params.append('search', searchTerm);
-      if (selectedDate) params.append('date', selectedDate);
+      // Add date filter if selected
+      if (selectedDate) {
+        params.append("date", selectedDate);
+        // Send timezone offset to backend (in minutes)
+        const timezoneOffset = new Date().getTimezoneOffset();
+        params.append("timezoneOffset", timezoneOffset.toString());
+      }
       
-      if (params.toString()) url += `?${params.toString()}`;
+      const queryString = params.toString();
+      const endpoint = queryString ? `/entries?${queryString}` : '/entries';
       
-      const entriesData = await apiCall(url);
-      setEntries(entriesData);
+      
+      const data = await apiCall(endpoint);
+      
+      // Filter entries by search term on the frontend
+      let filteredEntries = data || [];
+      
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
+        filteredEntries = filteredEntries.filter(entry => 
+          entry.title.toLowerCase().includes(searchLower) ||
+          entry.content.toLowerCase().includes(searchLower) ||
+          (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+        );
+      }
+      
+      setEntries(filteredEntries);
     } catch (error) {
-      console.error('Error fetching entries:', error);
+      console.error("❌ Fetch error:", error);
+      setEntries([]);
     }
   };
 
-  // Create new entry
   const createEntry = async (entryData) => {
     try {
       const newEntry = await apiCall('/entries', {
@@ -83,12 +92,13 @@ const Dashboard = () => {
       });
       setEntries([newEntry, ...entries]);
       setShowForm(false);
+      // Refresh entries to ensure proper filtering
+      setTimeout(() => fetchEntries(), 100);
     } catch (error) {
       console.error('Error creating entry:', error);
     }
   };
 
-  // Update entry
   const updateEntry = async (entryData) => {
     try {
       const updatedEntry = await apiCall(`/entries/${editingEntry._id}`, {
@@ -100,12 +110,13 @@ const Dashboard = () => {
       ));
       setEditingEntry(null);
       setShowForm(false);
+      // Refresh entries to ensure proper filtering
+      setTimeout(() => fetchEntries(), 100);
     } catch (error) {
       console.error('Error updating entry:', error);
     }
   };
 
-  // Delete entry
   const deleteEntry = async (entryId) => {
     try {
       await apiCall(`/entries/${entryId}`, {
@@ -117,27 +128,22 @@ const Dashboard = () => {
     }
   };
 
-  // Logout
-  const logout = () => {
-    localStorage.removeItem('token');
-    window.location.reload();
-  };
-
-  // Handle edit
   const handleEdit = (entry) => {
     setEditingEntry(entry);
     setShowForm(true);
   };
 
-  // Close form
   const closeForm = () => {
     setShowForm(false);
     setEditingEntry(null);
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedDate('');
+  };
 
-  
-  // Effects
+  // Initial load
   useEffect(() => {
     const initDashboard = async () => {
       await Promise.all([fetchUser(), fetchEntries()]);
@@ -146,6 +152,7 @@ const Dashboard = () => {
     initDashboard();
   }, []);
 
+  // Handle search and date filter changes with debouncing
   useEffect(() => {
     const delayedSearch = setTimeout(() => {
       fetchEntries();
@@ -155,9 +162,6 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-
-      
-      
       <div className="min-h-screen bg-[#ECFAE5] flex items-center justify-center">
         <div className="text-[#2d5a27] text-xl">Loading your journal...</div>
       </div>
@@ -166,58 +170,41 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#ECFAE5]">
-      {/* Header */}
-<header className="bg-[#CAE8BD] shadow-sm border-b border-[#B0DB9C]">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-    <div className="flex items-center justify-between">
-      
-      {/* Left Side - Title and User */}
-      <div className="flex items-center space-x-4">
-        <h1 className="text-2xl font-bold text-[#2d5a27]">My Journal</h1>
-        {user && (
-          <div className="flex items-center space-x-2 text-[#2d5a27]">
-            <User size={20} />
-            <span className="text-sm">{user.username}</span>
+      <header className="bg-[#CAE8BD] shadow-sm border-b border-[#B0DB9C]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-[#2d5a27]">My Journal</h1>
+              {user && (
+                <div className="flex items-center space-x-2 text-[#2d5a27]">
+                  <User size={20} />
+                  <span className="text-sm font-medium">{user.username}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center space-x-3">
+              <Link
+                to="/calendar"
+                className="flex items-center space-x-2 px-4 py-2 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition"
+              >
+                <Calendar size={18} />
+                <span>Calendar View</span>
+              </Link>
+              <LogoutButton />
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      </header>
 
-      {/* Right Side - Calendar Link and Logout */}
-      <div className="flex items-center space-x-3">
-        <Link
-          to="/calendar"
-          className="flex items-center space-x-2 px-4 py-2 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors"
-        >
-          <Calendar size={18} />
-          <span>Calendar View</span>
-        </Link>
-
-        <button
-          onClick={logout}
-          className="flex items-center space-x-2 px-4 py-2 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors"
-        >
-          <LogOut size={18} />
-          <span>Logout</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</header>
-
-
-
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Controls Section */}
         <div className="bg-[#DDF6D2] rounded-lg p-6 mb-8 shadow-sm">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Search and Filter */}
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2d5a27] w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search your entries..."
+                  placeholder="Search by title, content, or tags..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-[#CAE8BD] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B0DB9C] bg-white text-[#2d5a27]"
@@ -233,8 +220,6 @@ const Dashboard = () => {
                 />
               </div>
             </div>
-            
-            {/* New Entry Button */}
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center space-x-2 px-6 py-2 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors font-medium"
@@ -244,19 +229,25 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* Clear Filters */}
           {(searchTerm || selectedDate) && (
             <div className="mt-4 pt-4 border-t border-[#CAE8BD]">
               <div className="flex items-center justify-between">
-                <span className="text-[#2d5a27] text-sm">
-                  Showing {entries.length} entries
-                </span>
+                <div className="text-[#2d5a27] text-sm">
+                  <span>Showing {entries.length} entries</span>
+                  {searchTerm && (
+                    <span className="ml-2 px-2 py-1 bg-[#B0DB9C] rounded text-xs">
+                      Search: "{searchTerm}"
+                    </span>
+                  )}
+                  {selectedDate && (
+                    <span className="ml-2 px-2 py-1 bg-[#B0DB9C] rounded text-xs">
+                      Date: {selectedDate}
+                    </span>
+                  )}
+                </div>
                 <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedDate('');
-                  }}
-                  className="text-[#2d5a27] text-sm hover:underline"
+                  onClick={clearFilters}
+                  className="text-[#2d5a27] text-sm hover:underline px-2 py-1 rounded hover:bg-[#CAE8BD]"
                 >
                   Clear filters
                 </button>
@@ -265,9 +256,6 @@ const Dashboard = () => {
           )}
         </div>
 
-        
-
-        {/* Entries Grid */}
         {entries.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {entries.map((entry) => (
@@ -282,8 +270,19 @@ const Dashboard = () => {
         ) : (
           <div className="text-center py-12">
             <div className="text-[#2d5a27] text-lg mb-4">
-              {searchTerm || selectedDate ? 'No entries found matching your criteria' : 'No journal entries yet'}
+              {searchTerm || selectedDate ? 
+                'No entries found matching your criteria' : 
+                'No journal entries yet'
+              }
             </div>
+            {searchTerm || selectedDate ? (
+              <button
+                onClick={clearFilters}
+                className="px-6 py-3 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors font-medium mr-4"
+              >
+                Clear filters
+              </button>
+            ) : null}
             <button
               onClick={() => setShowForm(true)}
               className="px-6 py-3 bg-[#B0DB9C] text-[#2d5a27] rounded-lg hover:bg-[#9cc985] transition-colors font-medium"
@@ -294,7 +293,6 @@ const Dashboard = () => {
         )}
       </main>
 
-      {/* Entry Form Modal */}
       {showForm && (
         <EntryForm
           entry={editingEntry}
