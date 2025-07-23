@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   BookOpen,
   Edit3,
   Heart,
   Lock,
   Star,
-  Calendar,
-  Feather,
+  Calendar
 } from "lucide-react";
+
+import iconn from "../assets/iconn.png"; // Update path as needed
 
 const DiaryLandingPage = () => {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ const DiaryLandingPage = () => {
     "Life's moments become treasures when written down.",
   ];
 
-  // ✅ Redirect to dashboard if already logged in
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -47,16 +47,23 @@ const DiaryLandingPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#F5FFF0] to-[#DDF6D2]">
       {/* Navbar */}
       <nav className="p-6 flex justify-between items-center bg-transparent">
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#A8D5A0] shadow-md">
-            <Feather className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-2xl font-serif font-bold text-gray-900">Diary</span>
-        </div>
+        <Link
+          to="/"
+          className="flex items-center space-x-3 group hover:opacity-90 transition-opacity duration-300 cursor-pointer"
+        >
+          <img
+            src={iconn}
+            alt="Diary Logo"
+            className="w-10 h-10 rounded-full shadow-md group-hover:scale-110 group-hover:shadow-xl transition-all duration-300"
+          />
+          <span className="text-2xl font-serif font-bold text-gray-900 group-hover:text-[#2d5a27] transition-colors duration-300">
+            Diary
+          </span>
+        </Link>
         <div className="flex items-center space-x-6">
           <button
             onClick={() => navigate("/login")}
-            className="px-6 py-3 rounded-full font-semibold bg-[#A8D5A0] text-white hover:bg-[#8CC084] transition-all duration-300 ease-in-out hover:shadow-lg"
+            className="px-6 py-3 rounded-full font-semibold bg-[#A8D5A0] text-white hover:bg-[#2d5a27] hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#A8D5A0] focus:ring-opacity-50"
           >
             Sign In
           </button>
@@ -70,8 +77,8 @@ const DiaryLandingPage = () => {
             visible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
           }`}
         >
-          <div className="inline-flex items-center px-4 py-2 rounded-full mb-8 bg-[#E8F4E0] shadow-sm">
-            <Star className="w-4 h-4 mr-2 text-[#A8D5A0]" />
+          <div className="inline-flex items-center px-4 py-2 rounded-full mb-8 bg-[#E8F4E0] shadow-sm hover:shadow-md hover:bg-[#DDF6D2] transition-all duration-300 cursor-pointer">
+            <Star className="w-4 h-4 mr-2 text-[#A8D5A0] animate-pulse" />
             <span className="text-sm font-medium text-gray-700">
               Your personal sanctuary awaits
             </span>
@@ -81,7 +88,7 @@ const DiaryLandingPage = () => {
             Your Digital <br />
             <span className="relative inline-block">
               <span className="relative z-10">Diary</span>
-              <span className="absolute -bottom-3 left-0 w-full h-4 bg-[#A8D5A0]/30 rounded-full" />
+              <span className="absolute -bottom-3 left-0 w-full h-4 bg-[#A8D5A0]/30 rounded-full transform group-hover:scale-x-110 transition-transform duration-300" />
             </span>
           </h1>
 
@@ -96,17 +103,21 @@ const DiaryLandingPage = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
             <button
-              onClick={() => navigate("/register")}
-              className="px-8 py-4 rounded-full font-semibold text-white bg-[#A8D5A0] hover:bg-[#8CC084] transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105"
+              onClick={() => {
+                const el = document.getElementById("signin-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+                else navigate("/register");
+              }}
+              className="px-8 py-4 rounded-full font-semibold text-white bg-[#A8D5A0] hover:bg-[#2d5a27] hover:scale-110 hover:shadow-2xl transition-all duration-300 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#A8D5A0] focus:ring-opacity-50"
             >
               <span className="flex items-center">
                 Start Writing
-                <Edit3 className="w-5 h-5 ml-2" />
+                <Edit3 className="w-5 h-5 ml-2 transform group-hover:rotate-12 transition-transform duration-300" />
               </span>
             </button>
             <button
               onClick={() => navigate("/login")}
-              className="px-8 py-4 rounded-full font-semibold border-2 border-[#A8D5A0] text-[#2d5a27] hover:bg-[#A8D5A0]/10 transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105"
+              className="px-8 py-4 rounded-full font-semibold border-2 border-[#A8D5A0] text-[#2d5a27] hover:bg-[#2d5a27] hover:text-white hover:scale-110 hover:shadow-2xl transition-all duration-300 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#A8D5A0] focus:ring-opacity-50"
             >
               <span className="flex items-center">
                 <BookOpen className="w-5 h-5 mr-2" />
@@ -136,7 +147,7 @@ const DiaryLandingPage = () => {
           ].map((feature, index) => (
             <div
               key={index}
-              className="p-8 rounded-2xl border bg-white/50 backdrop-blur-sm hover:scale-105 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg"
+              className="p-8 rounded-2xl border bg-white/50 backdrop-blur-sm hover:scale-105 hover:shadow-xl hover:bg-white/70 transition-all duration-300 ease-in-out cursor-pointer"
               style={{ borderColor: "#DDF6D2" }}
             >
               <div className="w-14 h-14 rounded-full mx-auto mb-6 flex items-center justify-center bg-[#A8D5A0]/20">
@@ -152,7 +163,7 @@ const DiaryLandingPage = () => {
 
         {/* Preview */}
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-3xl p-8 shadow-lg border bg-white/70 backdrop-blur-sm border-[#DDF6D2] transition-transform duration-500 hover:shadow-xl">
+          <div className="rounded-3xl p-8 shadow-lg border bg-white/70 backdrop-blur-sm border-[#DDF6D2] transition-all duration-500 hover:shadow-2xl hover:scale-102 cursor-pointer">
             <div className="flex justify-between mb-6">
               <div className="flex space-x-2">
                 <div className="w-3 h-3 rounded-full bg-red-400" />
@@ -164,7 +175,6 @@ const DiaryLandingPage = () => {
                 <span>July 20, 2025</span>
               </div>
             </div>
-
             <h3 className="text-2xl font-serif font-semibold text-left text-[#2d5a27]">
               Today’s Entry
             </h3>
@@ -182,39 +192,57 @@ const DiaryLandingPage = () => {
       </section>
 
       {/* Footer */}
-<footer className="border-t py-10 bg-[#F5FFF0]/90 border-[#DDF6D2]">
-  <div className="max-w-6xl mx-auto px-6">
-    <div className="flex flex-col md:flex-row justify-between items-center">
-      <div className="flex items-center space-x-2 mb-4 md:mb-0">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#A8D5A0]">
-          <Feather className="w-4 h-4 text-white" />
+      <footer className="border-t py-10 bg-[#F5FFF0]/90 border-[#DDF6D2]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <img
+                src={iconn}
+                alt="Diary Logo"
+                className="w-8 h-8 rounded-full shadow-md hover:scale-110 transition-transform duration-300 cursor-pointer"
+              />
+              <span className="text-xl font-serif font-bold text-gray-900 hover:text-[#2d5a27] transition-colors duration-300 cursor-pointer">
+                Diary
+              </span>
+            </div>
+            <div className="flex space-x-6 text-gray-600 text-sm">
+              <a
+                href="https://www.privacypolicies.com/live/b3ce1cd4-108f-4806-a8b3-7caaa4b869e3"
+                className="hover:text-[#2d5a27] hover:underline transition-all duration-200 cursor-pointer"
+              >
+                Privacy
+              </a>
+              <a
+                href="https://www.privacypolicies.com/live/3c2b8a00-a9e3-46a5-a97e-c75f9c7f53df"
+                className="hover:text-[#2d5a27] hover:underline transition-all duration-200 cursor-pointer"
+              >
+                Terms
+              </a>
+              <a
+                href="mailto:kanhaiyaagarwantial@gmail.com"
+                className="hover:text-[#2d5a27] hover:underline transition-all duration-200 cursor-pointer"
+              >
+                Contact
+              </a>
+            </div>
+          </div>
+          <div className="text-center mt-6 pt-6 border-t text-gray-500 border-[#DDF6D2] text-sm">
+            <p>
+              Every story deserves a page. Written with{" "}
+              <Heart className="inline w-4 h-4 text-red-400 animate-pulse" /> by{" "}
+              <a
+                href="https://github.com/Invincibleeeee"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#2d5a27] font-medium hover:underline hover:text-[#A8D5A0] transition-all duration-200 cursor-pointer"
+              >
+                Kanhaiya
+              </a>
+              .
+            </p>
+          </div>
         </div>
-        <span className="text-xl font-serif font-bold text-gray-900">Diary</span>
-      </div>
-      <div className="flex space-x-6 text-gray-600 text-sm">
-        <a href="https://www.privacypolicies.com/live/b3ce1cd4-108f-4806-a8b3-7caaa4b869e3" className="hover:text-[#2d5a27] transition-all duration-200">Privacy</a>
-        <a href="https://www.privacypolicies.com/live/3c2b8a00-a9e3-46a5-a97e-c75f9c7f53df" className="hover:text-[#2d5a27] transition-all duration-200">Terms</a>
-        <a href="mailto:kanhaiyaagarwalofficial@gmail.com" className="hover:text-[#2d5a27] transition-all duration-200">Contact</a>
-      </div>
-    </div>
-    <div className="text-center mt-6 pt-6 border-t text-gray-500 border-[#DDF6D2] text-sm">
-      <p>
-        © 2025 Diary. Crafted with{" "}
-        <Heart className="inline w-4 h-4 text-red-400 animate-pulse" /> by{" "}
-        <a
-          href="https://github.com/Invincibleeeee"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#2d5a27] font-medium hover:underline"
-        >
-          Kanhaiya
-        </a>
-        .
-      </p>
-    </div>
-  </div>
-</footer>
-
+      </footer>
     </div>
   );
 };
