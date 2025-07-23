@@ -182,26 +182,39 @@ const DiaryLandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 bg-[#F5FFF0]/90 border-[#DDF6D2]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#A8D5A0]">
-                <Feather className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xl font-serif font-bold text-gray-900">Diary</span>
-            </div>
-            <div className="flex space-x-6 text-gray-600">
-              <a href="#" className="hover:text-[#2d5a27] transition-colors duration-200">Privacy</a>
-              <a href="#" className="hover:text-[#2d5a27] transition-colors duration-200">Terms</a>
-              <a href="#" className="hover:text-[#2d5a27] transition-colors duration-200">Contact</a>
-            </div>
-          </div>
-          <div className="text-center mt-6 pt-6 border-t text-gray-500 border-[#DDF6D2]">
-            <p>© 2025 Diary. Made with <Heart className="inline w-4 h-4 text-red-400" /> for writers everywhere.</p>
-          </div>
+<footer className="border-t py-10 bg-[#F5FFF0]/90 border-[#DDF6D2]">
+  <div className="max-w-6xl mx-auto px-6">
+    <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="flex items-center space-x-2 mb-4 md:mb-0">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#A8D5A0]">
+          <Feather className="w-4 h-4 text-white" />
         </div>
-      </footer>
+        <span className="text-xl font-serif font-bold text-gray-900">Diary</span>
+      </div>
+      <div className="flex space-x-6 text-gray-600 text-sm">
+        <a href="https://www.privacypolicies.com/live/b3ce1cd4-108f-4806-a8b3-7caaa4b869e3" className="hover:text-[#2d5a27] transition-all duration-200">Privacy</a>
+        <a href="https://www.privacypolicies.com/live/3c2b8a00-a9e3-46a5-a97e-c75f9c7f53df" className="hover:text-[#2d5a27] transition-all duration-200">Terms</a>
+        <a href="mailto:kanhaiyaagarwalofficial@gmail.com" className="hover:text-[#2d5a27] transition-all duration-200">Contact</a>
+      </div>
+    </div>
+    <div className="text-center mt-6 pt-6 border-t text-gray-500 border-[#DDF6D2] text-sm">
+      <p>
+        © 2025 Diary. Crafted with{" "}
+        <Heart className="inline w-4 h-4 text-red-400 animate-pulse" /> by{" "}
+        <a
+          href="https://github.com/yourusername"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#2d5a27] font-medium hover:underline"
+        >
+          Kanhaiya
+        </a>
+        .
+      </p>
+    </div>
+  </div>
+</footer>
+
     </div>
   );
 };
