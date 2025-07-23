@@ -163,13 +163,14 @@ app.get("/api/entries", auth, async (req, res) => {
   const selectedDate = new Date(date);
 
   const start = new Date(selectedDate);
-  start.setUTCHours(0, 0, 0, 0); // 🔁 UTC start of day
+  start.setHours(0, 0, 0, 0); // IST/local time
 
   const end = new Date(selectedDate);
-  end.setUTCHours(23, 59, 59, 999); // 🔁 UTC end of day
+  end.setHours(23, 59, 59, 999); // IST/local time
 
   query.createdAt = { $gte: start, $lte: end };
 }
+
 
   try {
     const entries = await Entry.find(query).sort({ createdAt: -1 });
