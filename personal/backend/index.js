@@ -150,12 +150,17 @@ app.post("/api/entries", auth, async (req, res) => {
 // ▶️ Get all entries
 app.get("/api/entries", auth, async (req, res) => {
   try {
-    let query = { user: req.userId };
+    let query = { userId: req.userId };
 
     if (req.query.date) {
-      const dateStr = req.query.date; // format: YYYY-MM-DD
-      const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
-      const endOfDay = new Date(`${dateStr}T23:59:59.999Z`);
+      const dateStr = req.query.date; // e.g. "2025-07-22"
+
+      // Create start and end of day in local time
+      const startOfDay = new Date(dateStr);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(dateStr);
+      endOfDay.setHours(23, 59, 59, 999);
 
       if (isNaN(startOfDay.getTime())) {
         return res.status(400).json({ error: "Invalid date format" });
@@ -174,6 +179,8 @@ app.get("/api/entries", auth, async (req, res) => {
     res.status(500).json({ error: "Something went wrong on the server." });
   }
 });
+
+
 
 
 
