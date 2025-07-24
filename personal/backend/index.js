@@ -10,18 +10,6 @@ app.use(cors());
 app.use(express.json());
 
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 
 mongoose
   .connect(process.env.MONGO_URI, {
